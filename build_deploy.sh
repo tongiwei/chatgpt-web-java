@@ -17,7 +17,8 @@ fi
 pnpm install
 pnpm build
 # 复制打包好的dist到后端工程
-cp -i -r "./dist/"** "../chatgpt-bootstrap/src/main/resources/static/" -y
+rm -rf ../chatgpt-bootstrap/src/main/resources/static/**
+cp -ir ./dist ../chatgpt-bootstrap/src/main/resources/static
 cd ..
 
 # 打包后端和数据库
