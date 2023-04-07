@@ -1,18 +1,28 @@
 # chatgpt-web-java
 
-# 分支 main
+中文版 | [English](README-EN.md)
 
-## 介绍 
+# 介绍
 
 - 本项目forked from [hncboy/chatgpt-web-java] (https://github.com/hncboy/chatgpt-web-java) 更新到2023年4月2号
 - 前端页面forked from [Chanzhaoyu/chatgpt-web](https://github.com/Chanzhaoyu/chatgpt-web) v2.10.9
 - 本项目主要做了前后端合并到一个工程,并支持前后端一键构建和部署.
-- [管理端开源代码](https://github.com/hncboy/chatgpt-web-admin) 目前未集成到一起.
+- 管理端开源代码 https://github.com/hncboy/chatgpt-web-admin
 
-## 框架
+# 注意
+
+### 关于提问
+
+有问题优先通过文档和 issue 解决，也许你遇到的问题已经有解决方案了，没有的话可以提新的 issue。
+### 关于 ApiKey
+
+当前网站免费提问，因 ApiKey 额度有限，限流频率会比较高，如果有大佬赞助供网站使用的话十分感激。
+
+# 框架
 
 - Spring Boot 2.7.10
 - JDK 17
+- MySQL 8.x
 - SpringDoc 接口文档
 - MyBatis Plus
 - MapStruct
@@ -21,11 +31,18 @@
 - [SaToken](https://sa-token.cc/) 权限校验
 - [Grt1228 ChatGPT java sdk](https://github.com/Grt1228/chatgpt-java)
 
-## 地址
+# 地址
 
 - 接口文档：http://localhost:3002/swagger-ui.html
-- 客户端：https://front.stargpt.top/ 密码：stargpt
-- 管理端：https://admin.stargpt.top/ 账号密码 admin-admin
+- 用户端：
+  - https://front.stargpt.top/ (被封)
+  - https://front1.stargpt.top/
+  - https://front2.stargpt.top/
+  - https://front3.stargpt.top/
+
+- 管理端关闭对外开放
+
+# 功能
 
 ## 已实现功能
 
@@ -53,53 +70,42 @@
 
 ## 待实现功能
 
-- GPT 接口异常信息特定封装返回
+- GPT 接口异常信息特定封装返回，
 - 其他没发现的点
 
 ## 存在问题
 
 - 在接口返回报错信息时，不会携带 conversationid 和 parentMessageId，导致前端下一次发送消息时会丢失这两个字段，丢失上下文关系。
 
-## 管理端
+# 管理端
 
-### 消息记录
+## 消息记录
 
 展示消息的列表，问题和回答各是一条消息。通过父消息 id 关联上一条消息。父消息和当前消息一定是同一个聊天室的。
 
 ![](pics/chat_message_1.png)
 
-### 限流记录
+## 限流记录
 
 查看各个 ip 的限流记录，只记录在限流时间范围的限流次数。
 
 ![](pics/rate_limit_1.png)
 
-### 聊天室管理
+## 聊天室管理
 
 查看聊天室。这里的聊天室和客户端左边的对话不是同一个概念。在同一个窗口中，我们既可以选择关联上下文发送后者不关联上下文发送。如果不关联上下文发送每次发送消息都会产生一个聊天室。
 
 ![](pics/chat_room_1.png)
 
-### 敏感词管理
+## 敏感词管理
 
 查看敏感词列表，目前只提供了查询的功能，后期可以增加管理。
 
 ![](pics/sensitive_word_1.png)
 
-## 接口
+# 运行部署
 
-| 路径          | 功能         | 完成情况 |
-| ------------- | ------------ | -------- |
-| /config       | 获取聊天配置 | 已完成   |
-| /chat-process | 消息处理     | 已完成   |
-| /verify       | 校验密码     | 已完成   |
-| /session      | 获取模型信息 | 已完成   |
-
-## 运行
-
-- IDEA、Dockfile
-
-- application.yml
+## IDEA 运行
 
   ```yaml
   spring:
@@ -152,8 +158,9 @@
   ```
   
   
+前端代码使用 WebStom、Vs Code 或者 pnpm install & dev 运行，后端 IDEA 运行。
 
-## Docker 
+## Docker
 
 ### Appliction Build & Run
 
@@ -171,32 +178,38 @@
                --chat.openai_api_key=xxx \
                --chat.openai_access_token=xxx
   ```
+需要 clone 仓库并在根目录下执行
 
-  ![](pics/docker_run.png)
+### MySQL
 
-### Mysql Build & Run
-
-MySQL容器运行，运行后可以系统可以直接连接docker MySQL容器
+通过 Dockerfile_mysql  构建带有数据库表结构的镜像并运行，本地有 MySQL 可以跳过
 
 ```shell
-# 删除旧版container（如果有的话）
-docker stop mysql_gpt && docker rm mysql_gpt
-# 构建image
-docker build -t mysql_gpt_img:latest . -f Dockerfile_mysql
-# 运行container
-docker run -d -p 3306:3306 \
-  --name mysql_gpt \
-  -v ~/mydata/mysql_dummy/data:/var/lib/mysql \
-  -v  ~/mydata/mysql_dummy/conf:/etc/mysql/conf.d \
-  -v ~/mydata/mysql_dummy/log:/var/log/mysql \
-  mysql_gpt_img:latest
+
+  # 删除旧版 container （如果有的话）
+  docker stop mysql_gpt && docker rm mysql_gpt
+  # 构建 image
+  docker build -t mysql_gpt_img:latest . -f Dockerfile_mysql
+  # 运行 container
+  docker run -d -p 3309:3306 \
+       --name mysql_gpt \
+       -v ~/mydata/mysql_dummy/data:/var/lib/mysql \
+       -v  ~/mydata/mysql_dummy/conf:/etc/mysql/conf.d \
+       -v ~/mydata/mysql_dummy/log:/var/log/mysql \
+       mysql_gpt_img:latest
 ```
 
-### Docker compose
+### Java
 
-[Docker Hub](https://hub.docker.com/repository/docker/hncboy/chatgpt-web-java)
+通过 Docker 构建 Java 应用镜像并运行
 
-docker-compose up -d
+```shell
+  # 删除旧版 container （如果有的话）
+  docker stop chatgpt-web-java && docker rm chatgpt-web-java
+  docker build -t chatgpt-web-java .
+  docker run -d -p 3002:3002 chatgpt-web-java
+```
+如果要显式指定参数，可以在 `docker run` 后添加 `-e` 选项，配置 `application.yml` 用到的参数。例如：
 
 ```yaml
 version: '3'
@@ -212,8 +225,27 @@ services:
         --chat.openai_api_key=xxxxx
         --chat.http_proxy_host= \
         --chat.http_proxy_port= \
-
+```shell
+  # 删除旧版 container （如果有的话）
+  docker stop chatgpt-web-java && docker rm chatgpt-web-java
+  docker build -t chatgpt-web-java . 
+  # 如果这里要使用 java 的容器访问 mysql 容器，需要使用 host.docker.internal 而不是 localhost，才可以访问到宿主机的 3009 端口（mysql开放了3009端口）
+  docker run -d -p 3002:3002 \
+      -e JDBC_URL=jdbc:mysql://host.docker.internal:3309/chat?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai \
+      -e MYSQL_USER_NAME=root \
+      -e MYSQL_PASSWORD=123456 \
+      -e CHAT_OPENAI_API_KEY=xxx \
+      -e CHAT_OPENAI_ACCESS_TOKEN=xxx \
+      -e CHAT_OPENAI_API_BASE_URL=http://xxx.com \
+      -e CHAT_HTTP_PROXY_HOST=127.0.0.1 \
+      -e CHAT_HTTP_PROXY_PORT=7890 \
+      chatgpt-web-java
 ```
+  ![](pics/docker_run.png)
+
+## docker-compose
+
+在 `docker-compose.yml` 文件中配置好配置后，使用 `docker-compose up -d` 可一键启动。
 
 ## 一键部署前后端脚本 build_deploy.sh , 运行前请修改docker-compose里的参数,如 openai_api_key
 
@@ -254,62 +286,29 @@ docker-compose up -d
 
 
 ## 表结构
+# 数据库表
+
+表结构路径：`chatgpt-bootstrap/src/main/resources/db`。 不需要额外数据库的可以自行连接  H2 地址，改下连接方式就可以。
+
 
 - 聊天室表
-
-| 列名                  | 数据类型         | 约束             | 说明                       |
-| --------------------- |--------------| ---------------- | -------------------------- |
-| id                    | BIGINT       | PRIMARY KEY      | 主键                       |
-| ip                    | VARCHAR(255) |                  | ip                         |
-| conversation_id       | VARCHAR(255) | UNIQUE, NULL     | 对话 id，唯一              |
-| first_chat_message_id | BIGINT       | UNIQUE, NOT NULL | 第一条消息主键，唯一       |
-| first_message_id      | VARCHAR(255) | UNIQUE, NOT NULL | 第一条消息 id，唯一        |
-| title                 | VARCHAR(255) | NOT NULL         | 对话标题，从第一条消息截取 |
-| api_type              | VARCHAR(20)  | NOT NULL         | API 类型                   |
-| create_time           | DATETIME     | NOT NULL         | 创建时间                   |
-| update_time           | DATETIME     | NOT NULL         | 更新时间                   |
-
 - 聊天记录表
-
-| 列名                       | 数据类型      | 约束        | 说明                     |
-| -------------------------- | ------------- | ----------- | ------------------------ |
-| id                         | BIGINT        | PRIMARY KEY | 主键                     |
-| message_id                 | VARCHAR(255)  | NOT NULL    | 消息 id                  |
-| parent_message_id          | VARCHAR(255)  |             | 父级消息 id              |
-| parent_answer_message_id   | VARCHAR(255)  |             | 父级回答消息 id          |
-| parent_question_message_id | VARCHAR(255)  |             | 父级问题消息 id          |
-| context_count              | BIGINT        | NOT NULL    | 上下文数量               |
-| question_context_count     | BIGINT        | NOT NULL    | 问题上下文数量           |
-| message_type               | INTEGER       | NOT NULL    | 消息类型枚举             |
-| chat_room_id               | BIGINT        | NOT NULL    | 聊天室 id                |
-| conversation_id            | VARCHAR(255)  |             | 对话 id                  |
-| api_type                   | VARCHAR(20)   | NOT NULL    | API 类型                 |
-| ip                         | VARCHAR(255)  |             | ip                       |
-| api_key                    | VARCHAR(255)  |             | ApiKey                   |
-| content                    | VARCHAR(5000) | NOT NULL    | 消息内容                 |
-| original_data              | TEXT          |             | 消息的原始请求或响应数据 |
-| response_error_data        | TEXT          |             | 错误的响应数据           |
-| prompt_tokens              | BIGINT        |             | 输入消息的 tokens        |
-| completion_tokens          | BIGINT        |             | 输出消息的 tokens        |
-| total_tokens               | BIGINT        |             | 累计 Tokens              |
-| status                     | INTEGER       | NOT NULL    | 聊天记录状态             |
-| is_hide                    | TINYINT       | NOT NULL    | 是否隐藏 0 否 1 是       |
-| create_time                | DATETIME      | NOT NULL    | 创建时间                 |
-| update_time                | DATETIME      | NOT NULL    | 更新时间                 |
-
 - 敏感词表
 
-| 字段名      | 数据类型     | 约束        | 描述                      |
-| ----------- | ------------ | ----------- | ------------------------- |
-| id          | BIGINT       | PRIMARY KEY | 主键                      |
-| word        | VARCHAR(255) | NOT NULL    | 敏感词内容                |
-| status      | INTEGER      | NOT NULL    | 状态，1为启用，2为停用    |
-| is_deleted  | INTEGER      | NULL        | 是否删除，0为否，NULL为是 |
-| create_time | DATETIME     | NOT NULL    | 创建时间                  |
-| update_time | DATETIME     | NOT NULL    | 更新时间                  |
+# 风险声明
+
+本项目仅供学习和研究使用，不鼓励用于商业用途。对于因使用本项目而导致的任何损失，我们不承担任何责任。
 
 # 联系
 
+进群请遵守规则，禁止讨论敏感信息。
+
+<div style="display: flex; align-items: center; gap: 20px;">
+  <div style="text-align: center">
+    <img style="max-width: 100%" src="pics/wechat_group.png" alt="微信" />
+    <p>微信群</p>
+  </div>
+</div>
 <div style="display: flex; align-items: center; gap: 20px;">
   <div style="text-align: center">
     <img style="max-width: 100%" src="pics/qq_group.png" alt="QQ" />
@@ -333,6 +332,6 @@ docker-compose up -d
   </div>
 </div>
 
-## License
+# LICENSE
 
-MIT © [hncboy](license)
+MIT © [hncboy](LICENSE)

@@ -4,8 +4,15 @@ COPY chatgpt-bootstrap/src/main/resources/db/schema-mysql.sql /docker-entrypoint
 
 WORKDIR /usr/bin
 
+
+# 暴露端口为3306
 EXPOSE 3306
 
+# 设置MySQL root的密码
 ENV MYSQL_ROOT_PASSWORD=123456
+
+# 健康检查
+HEALTHCHECK --interval=5s --timeout=3s \
+    CMD mysql -h localhost -uroot -p${MYSQL_ROOT_PASSWORD} -e 'SELECT 1' 2>/dev/null || exit 1
 
 CMD ["mysqld"]
