@@ -4,9 +4,10 @@
 
 ## 介绍 
 
-- [Chanzhaoyu/chatgpt-web](https://github.com/Chanzhaoyu/chatgpt-web) 项目的 Java 后台
-- 该分支关联项目的 [2.10.8](https://github.com/Chanzhaoyu/chatgpt-web/releases/tag/v2.10.8) 版本，在不改动前端的情况下更新后台
-- [管理端开源代码](https://github.com/hncboy/chatgpt-web-admin)
+- 本项目forked from [hncboy/chatgpt-web-java] (https://github.com/hncboy/chatgpt-web-java) 更新到2023年4月2号
+- 前端页面forked from [Chanzhaoyu/chatgpt-web](https://github.com/Chanzhaoyu/chatgpt-web) v2.10.9
+- 本项目主要做了前后端合并到一个工程,并支持前后端一键构建和部署.
+- [管理端开源代码](https://github.com/hncboy/chatgpt-web-admin) 目前未集成到一起.
 
 ## 框架
 
@@ -106,7 +107,7 @@
       driver-class-name: com.mysql.cj.jdbc.Driver
       username: root
       password: 123456
-      url: jdbc:mysql://localhost:3309/chat?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false
+      url: jdbc:mysql://localhost:3306/chat?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false
   
   #mybatis-plus:
   #  configuration:
@@ -164,7 +165,7 @@
 - 配置参数，在环境变量 PARAMS 中配置 application yml 用到的参数，如下示例
 
   ```
-  --spring.datasource.url=jdbc:mysql://localhost:3309/chat?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai \
+  --spring.datasource.url=jdbc:mysql://localhost:3306/chat?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai \
                --spring.datasource.username=root \
                --spring.datasource.password=123456 \
                --chat.openai_api_key=xxx \
@@ -183,7 +184,7 @@ docker stop mysql_gpt && docker rm mysql_gpt
 # 构建image
 docker build -t mysql_gpt_img:latest . -f Dockerfile_mysql
 # 运行container
-docker run -d -p 3309:3309 \
+docker run -d -p 3306:3306 \
   --name mysql_gpt \
   -v ~/mydata/mysql_dummy/data:/var/lib/mysql \
   -v  ~/mydata/mysql_dummy/conf:/etc/mysql/conf.d \
@@ -205,7 +206,7 @@ services:
     ports:
       - "3002:3002"
     environment:
-      PARAMS: --spring.datasource.url=jdbc:mysql://localhost:3309/chat?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai \
+      PARAMS: --spring.datasource.url=jdbc:mysql://localhost:3306/chat?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai \
         --spring.datasource.username=root \
         --spring.datasource.password=123456 \
         --chat.openai_api_key=xxxxx
@@ -213,6 +214,44 @@ services:
         --chat.http_proxy_port= \
 
 ```
+
+## 一键部署前后端脚本 build_deploy.sh , 运行前请修改docker-compose里的参数,如 openai_api_key
+
+```
+#!/bin/sh
+
+# 检查操作系统是否为 Windows
+if [ "$(uname)" = "MINGW64_NT-10.0" ]; then
+  # 使用 Git Bash 时，将路径转换为 Windows 路径
+  project_path="$(pwd -W)"
+else
+  project_path="$(pwd)"
+fi
+
+# 打包前端项目
+cd "$project_path/chatgpt-web-2.10.9"
+# 运行前提是已经安装node 和 pnpm , docker 和docker-compose
+if [ -d "./dist" ]; then
+  rm -rf "./dist"
+fi
+pnpm install
+pnpm build
+# 复制打包好的dist到后端工程
+cp -i -r "./dist/"** "../chatgpt-bootstrap/src/main/resources/static/" -y
+cd ..
+
+# 打包后端和数据库
+docker rm -f chatgpt-java
+docker rmi chatgpt-java
+docker build -t chatgpt-java .
+# DB 可以只运行一次
+docker rm -f chatgpt-db
+docker rmi chatgpt-db
+docker build -f Dockerfile_mysql -t chatgpt-db .
+# 一键docker-compose 运行, 运行前请修改docker-compose 参数,修改API-KEY等等
+docker-compose up -d
+```
+
 
 ## 表结构
 
