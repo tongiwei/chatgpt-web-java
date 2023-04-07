@@ -6,9 +6,9 @@ services:
       - chatgpt-db
     command: >
       /bin/bash -c '
-      while ! nc -z database 3306;
+      while ! nc -z chatgpt-db 3306;
       do
-        echo "wait for database";
+        echo "wait for chatgpt-db";
         sleep 1;
       done;
 
