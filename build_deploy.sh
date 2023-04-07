@@ -21,12 +21,14 @@ cp -i -r "./dist/"** "../chatgpt-bootstrap/src/main/resources/static/" -y
 cd ..
 
 # 打包后端和数据库
-docker rm -f chatgpt-java
-docker rmi chatgpt-java
-docker build -t chatgpt-java .
 # DB 可以只运行一次
 docker rm -f chatgpt-db
 docker rmi chatgpt-db
 docker build -f Dockerfile_mysql -t chatgpt-db .
+
+docker rm -f chatgpt-java
+docker rmi chatgpt-java
+docker build -t chatgpt-java .
+
 # 一键docker-compose 运行, 运行前请修改docker-compose 参数,修改API-KEY等等
 docker-compose up -d

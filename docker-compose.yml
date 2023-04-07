@@ -2,6 +2,19 @@ version: '3'
 services:
   java:
     image: chatgpt-java:latest
+    depends_on:
+      - chatgpt-db
+    command: >
+      /bin/bash -c '
+      while ! nc -z database 3306;
+      do
+        echo "wait for database";
+        sleep 1;
+      done;
+
+      echo "database is ready!";
+      echo "start web service here";
+      '
     ports:
       - "3002:3002"
     container_name: chatgpt-java
