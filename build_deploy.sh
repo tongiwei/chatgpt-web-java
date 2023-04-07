@@ -17,8 +17,26 @@ fi
 pnpm install
 pnpm build
 # 复制打包好的dist到后端工程
-rm -rf ../chatgpt-bootstrap/src/main/resources/static/**
-cp -ir ./dist ../chatgpt-bootstrap/src/main/resources/static
+# 判断操作系统类型
+if [ "$(uname)" == "Darwin" ]; then
+  OS="Mac"
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+  OS="Linux"
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+  OS="Win"
+else
+  echo "Unsupported operating system."
+  exit 1
+fi
+
+if [ $OS == "Win" ]; then
+  rd /s /q ..\chatgpt-bootstrap\src\main\resources\static\
+  xcopy /e dist ..\chatgpt-bootstrap\src\main\resources\static
+else
+  rm -rf ../chatgpt-bootstrap/src/main/resources/static/
+  cp -r dist ../chatgpt-bootstrap/src/main/resources/static
+fi
+
 cd ..
 
 # 打包后端和数据库
